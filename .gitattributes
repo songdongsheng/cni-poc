@@ -1,0 +1,64 @@
+# git check-attr -a iconv.txt
+
+# Tell Git not to attempt any end-of-line conversion upon checkin or checkout.
+*               -text
+
+*.a             binary
+*.aes           binary
+*.dll           binary
+*.elf           binary
+*.exe           binary
+*.gz            binary
+*.ico           binary
+*.jar           binary
+*.jpg           binary
+*.lib           binary
+*.p12           binary
+*.pdb           binary
+*.pdf           binary
+*.pgp           binary
+*.png           binary
+*.ps            binary
+*.sig           binary
+*.so            binary
+*.svg           binary
+*.xz            binary
+*.zip           binary
+
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+*.csproj        text eol=crlf
+*.mc            text eol=crlf
+*.rc            text eol=crlf
+*.reg           text eol=crlf
+*.sln           text eol=crlf
+*.vcxproj       text eol=crlf
+
+.*              text eol=lf
+*.asc           text eol=lf
+*.c             text eol=lf
+*.cer           text eol=lf
+*.cnf           text eol=lf
+*.conf          text eol=lf
+*.config        text eol=lf
+*.cpp           text eol=lf
+*.crl           text eol=lf
+*.cs            text eol=lf
+*.css           text eol=lf
+*.cxx           text eol=lf
+*.gradle        text eol=lf
+*.h             text eol=lf
+*.java          text eol=lf
+*.json          text eol=lf
+*.md            text eol=lf
+*.properties    text eol=lf
+*.py            text eol=lf
+*.sh            text eol=lf
+*.sql           text eol=lf
+*.tex           text eol=lf
+*.tpl           text eol=lf
+*.txt           text eol=lf
+*.wsdl          text eol=lf
+*.xml           text eol=lf
+*.xsl           text eol=lf
+*.yaml          text eol=lf
