@@ -10,7 +10,7 @@ We have 3 methods to do the cloud native initialization task：
 
 2. Initialize with Helm post-install hook and initialization containers
 
-    **If the hook depends on the service that will be installed，and given wrong 
+    **If the hook depends on the service that will be installed，and given wrong
     priority (hook weight), it will cause a deadlock.**
 
     **When we assign the correct priority to the hook, the hook executes serially,
@@ -24,7 +24,6 @@ We have 3 methods to do the cloud native initialization task：
     Since there is no helm to clean up, only the data required for initialization
     will remain in the cluster, and the Kubernetes environment will looks a bit messy.
 
-
 ## Setup
 
 The demo program requires the following prerequisites：
@@ -35,10 +34,14 @@ The demo program requires the following prerequisites：
 
 ## Proof of concept
 
-This demo program contains 3 Microservice services, bdt, monte and nidd, all of
+### Cloud Native Initialization - Demo program
+
+This demo program contains 2 Microservice services, monte and nidd, all of
 which depend on the database.
-Let's assume that the initialization time for these services and databases,
-bdt takes 15 seconds, monte takes 20 seconds, nidd takes 25 seconds, data base takes 30 seconds.
+Let's assume that the startup time for these services and databases,
+monte takes 15 seconds, nidd takes 20 seconds, database takes 10 seconds. For the initialization time, monte takes 10 seconds, nidd takes 15 seconds.
+
+![Cloud Native Initialization - Demo program](cni-poc.png)
 
 ### Initialize with Helm pre-install hook and initialization containers
 
