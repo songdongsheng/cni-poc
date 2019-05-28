@@ -37,16 +37,28 @@ The demo program requires the following prerequisites：
 
 ### Cloud Native Initialization - Demo program
 
-This demo program contains 2 Microservice services, monte and nidd, all of
+This demo program contains 3 Microservice services, cm, nef and nidd, all of
 which depend on the database.
-Let's assume that the startup time for these services and databases,
-monte takes 15 seconds, nidd takes 20 seconds, database takes 10 seconds.
-For the initialization time, monte takes 10 seconds, nidd takes 15 seconds.
 
-![Cloud Native Initialization - Demo program](cni-poc.png)
+Let's assume that the startup time for these services and databases,
+database takes 10 seconds, cm takes 15 seconds, nidd takes 20 seconds.
+For the oneshot database initialization time, cm takes 10 seconds,
+nef takes 10 seconds, nidd takes 15 seconds.
+
+Moreover, nef need oneshot initialization on cm, it takes 10 seconds。
+
+![Cloud Native Initialization - Demo program](cni-poc.svg)
 
 ### Initialize with Helm pre-install hook and initialization containers
+1. Separate Helm charts works good.
+2. Umbrella Helm charts can deadlock, not works.
 
 ### Initialize with Helm post-install hook and initialization containers
+1. Separate Helm charts works good.
+2. Umbrella Helm charts works.
+3. Umbrella Helm charts with improper hooks weight can deadlock, not works.
 
-### Initialize with Kubernetes job and initialization containers
+### Initialize with Kubernetes jobs and initialization containers
+1. Separate Helm charts works good.
+2. Umbrella Helm charts works good.
+3. Kubernetes jobs can do better, it can run initialization tasks concurrently, reducing initialization time.
