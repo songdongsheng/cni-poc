@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: "{{ include "cm.name" . }}-test-connection"
+    labels:
+        app.kubernetes.io/name: {{ include "cm.name" . }}
+        helm.sh/chart: {{ include "cm.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+    annotations:
+        "helm.sh/hook": test-success
+spec:
+    containers:
+        - name: nc
+          image: busybox
+          #image: debian/stable-slim
+          command: ['sh', '-c']
+          args:
+            - |
+              #COMMAND=${COMMAND//[$'\r\n']}
+              rs=`nc -z -v {{ .Values.global.cmHost }} {{ .Values.global.cmPort }} 2>&1`
+              rc=$?
+              rs=${rs//[$'\r\n']}
+              echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] ${rs} | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+              [ "$rc" -eq "0" ] && (echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] "{{ include "cm.name" . }}-test-connection" OK | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }}) && exit 0
+    restartPolicy: OnFailure

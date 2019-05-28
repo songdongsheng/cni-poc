@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ include "db.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "db.name" . }}
+        helm.sh/chart: {{ include "db.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    replicas: {{ .Values.replicaCount }}
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: {{ include "db.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: {{ include "db.name" . }}
+                app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+            containers:
+                - name: {{ .Chart.Name }}
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  command: ['sh', '-c']
+                  args:
+                      - |
+                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} starting ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                        sleep 20;
+                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} ready | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                        while true; do
+                            nc -l -p {{ .Values.global.dbPort }} 2>&1 | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                            #echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} restart | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                        done
+                  ports:
+                      - name: tcp
+                        containerPort: {{ .Values.global.dbPort }}
+                        # supported values: "SCTP", "TCP", "UDP"
+                        protocol: TCP
+                  livenessProbe:
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      exec:
+                          command:
+                              - sh
+                              - "-c"
+                              - exit 0
+                  readinessProbe:
+                      initialDelaySeconds: 21
+                      periodSeconds: 5
+                      tcpSocket:
+                          port: {{ .Values.global.dbPort }}
+                  resources:
+                      {{- toYaml .Values.resources | nindent 22 }}
+            {{- with .Values.nodeSelector }}
+            nodeSelector:
+                {{- toYaml . | nindent 16 }}
+            {{- end }}
+        {{- with .Values.affinity }}
+        affinity:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+        tolerations:
+            {{- toYaml . | nindent 12 }}
+        {{- end }}

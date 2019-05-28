@@ -1,0 +1,15 @@
+# Default values for cni-poc.
+
+global:
+    # Only ncHost required changed according to the running time.
+    ncHost:     172.31.215.121
+    ncPort:     12960
+
+    dbHost:     db
+    dbPort:     5432
+
+    cmHost:     cm
+    cmPort:     80
+
+    monteHost:  monte
+    montePort:  80

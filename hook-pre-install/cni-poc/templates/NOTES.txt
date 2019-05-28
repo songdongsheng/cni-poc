@@ -1,0 +1,1 @@
+Hi, this is demo program of Helm pre-install hook can cause a deadlock.

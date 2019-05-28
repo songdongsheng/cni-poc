@@ -22,7 +22,8 @@ We have 3 methods to do the cloud native initialization task：
      work in the correct priority and shortest time.**
 
     Since there is no helm to clean up, only the data required for initialization
-    will remain in the cluster, and the Kubernetes environment will looks a bit messy.
+    will remain in the cluster, and the Kubernetes environment will **looks a bit messy**,
+    or **need clean up manually**.
 
 ## Setup
 
@@ -39,7 +40,8 @@ The demo program requires the following prerequisites：
 This demo program contains 2 Microservice services, monte and nidd, all of
 which depend on the database.
 Let's assume that the startup time for these services and databases,
-monte takes 15 seconds, nidd takes 20 seconds, database takes 10 seconds. For the initialization time, monte takes 10 seconds, nidd takes 15 seconds.
+monte takes 15 seconds, nidd takes 20 seconds, database takes 10 seconds.
+For the initialization time, monte takes 10 seconds, nidd takes 15 seconds.
 
 ![Cloud Native Initialization - Demo program](cni-poc.png)
 

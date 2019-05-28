@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+    name: {{ include "cm.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "cm.name" . }}
+        helm.sh/chart: {{ include "cm.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    type: {{ .Values.service.type }}
+    ports:
+        - port: {{ .Values.global.cmPort }}
+          # supported values: "SCTP", "TCP", "UDP"
+          protocol: TCP
+    selector:
+        app.kubernetes.io/name: {{ include "cm.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
