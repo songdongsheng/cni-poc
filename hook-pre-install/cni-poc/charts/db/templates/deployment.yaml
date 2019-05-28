@@ -26,13 +26,13 @@ spec:
                   command: ['sh', '-c']
                   args:
                       - |
-                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} starting ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                        sleep 20;
-                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} ready | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                        while true; do
-                            nc -l -p {{ .Values.global.dbPort }} 2>&1 | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                            #echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} restart | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                        done
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} starting ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          sleep 20;
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} ready | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          while true; do
+                              nc -w 0 -l -p {{ .Values.global.dbPort }} 2>&1 | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                              #echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [db] {{.Values.global.dbHost}} restart | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          done
                   ports:
                       - name: tcp
                         containerPort: {{ .Values.global.dbPort }}

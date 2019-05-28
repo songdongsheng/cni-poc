@@ -16,11 +16,11 @@ spec:
           #image: debian/stable-slim
           command: ['sh', '-c']
           args:
-            - |
-              #COMMAND=${COMMAND//[$'\r\n']}
-              rs=`nc -z -v {{ .Values.global.cmHost }} {{ .Values.global.cmPort }} 2>&1`
-              rc=$?
-              rs=${rs//[$'\r\n']}
-              echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] ${rs} | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-              [ "$rc" -eq "0" ] && (echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] "{{ include "cm.name" . }}-test-connection" OK | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }}) && exit 0
+              - |
+                  #COMMAND=${COMMAND//[$'\r\n']}
+                  rs=`nc -w 2 -z -v {{ .Values.global.cmHost }} {{ .Values.global.cmPort }} 2>&1`
+                  rc=$?
+                  rs=${rs//[$'\r\n']}
+                  echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] ${rs} | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                  [ "$rc" -eq "0" ] && (echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] "{{ include "cm.name" . }}-test-connection" OK | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }}) && exit 0
     restartPolicy: OnFailure

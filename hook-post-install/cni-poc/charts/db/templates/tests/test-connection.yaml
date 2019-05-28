@@ -9,15 +9,17 @@ metadata:
         app.kubernetes.io/managed-by: {{ .Release.Service }}
     annotations:
         "helm.sh/hook": test-success
+        "helm.sh/hook-delete-policy": "before-hook-creation"
 spec:
     containers:
         - name: nc
           image: busybox
-          #image: debian/stable-slim
+            #image: debian/stable-slim
           command: ['sh', '-c']
           args:
               - |
                   #COMMAND=${COMMAND//[$'\r\n']}
+                  echo options timeout:1 >> /etc/resolv.conf
                   rs=`nc -w 2 -z -v {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1`
                   rc=$?
                   rs=${rs//[$'\r\n']}

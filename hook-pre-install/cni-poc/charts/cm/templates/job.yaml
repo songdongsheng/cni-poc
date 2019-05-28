@@ -27,12 +27,12 @@ spec:
                       - sh
                       - "-c"
                       - |
-                        until `nc -z {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1`; do
-                            echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] waiting for db | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                            sleep 2;
-                        done
-                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] `nc -z -v {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1` | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] db is up | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          until `nc -w 2 -z {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1`; do
+                              echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] waiting for db | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                              sleep 2;
+                          done
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] `nc -z -v {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1` | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] db is up | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
             containers:
                 - name: {{ .Chart.Name }}-init
                   image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -40,6 +40,6 @@ spec:
                   command: ['sh', '-c']
                   args:
                       - |
-                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] {{.Values.global.cmHost}} job begin ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
-                        sleep 20;
-                        echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] {{.Values.global.cmHost}} job finished | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] {{.Values.global.cmHost}} job begin ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          sleep 20;
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] {{.Values.global.cmHost}} job finished | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};

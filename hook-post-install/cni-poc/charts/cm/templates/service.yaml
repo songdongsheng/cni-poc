@@ -11,7 +11,7 @@ spec:
     type: {{ .Values.service.type }}
     ports:
         - port: {{ .Values.global.cmPort }}
-          # supported values: "SCTP", "TCP", "UDP"
+            # supported values: "SCTP", "TCP", "UDP"
           protocol: TCP
     selector:
         app.kubernetes.io/name: {{ include "cm.name" . }}
