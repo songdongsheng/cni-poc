@@ -1,0 +1,27 @@
+# Default values for database.
+
+replicaCount: 1
+
+image:
+    repository: postgres
+    tag: 11-alpine
+    pullPolicy: IfNotPresent
+
+resources: {}
+
+service:
+    type: NodePort
+
+global:
+    # Only ncHost required changed according to the running time.
+    # nc -k -l 12960
+    # nc -w 2 -z -v 172.31.215.121 12960
+    # /bin/date "+%Y-%m-%dT%H:%M:%S%z" | nc -w 2 -N 172.31.215.121 12960
+    ncHost:     172.31.215.121
+    ncPort:     12960
+
+    dbHost:     db
+    dbPort:     5432
+
+    cmHost:     cm
+    cmPort:     80

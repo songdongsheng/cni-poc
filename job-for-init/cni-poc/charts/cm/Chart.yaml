@@ -2,5 +2,5 @@ apiVersion: v1
 appVersion: "1.0"
 description: A Helm chart for Kubernetes
 icon: https://helm.sh/src/img/favicon.png
-name: cni-poc
-version: 0.1.0
+name: cm
+version: 0.2.0

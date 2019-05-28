@@ -1,0 +1,127 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: {{ include "cm.fullname" . }}
+    labels:
+        app.kubernetes.io/name: {{ include "cm.name" . }}
+        helm.sh/chart: {{ include "cm.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    replicas: {{ .Values.replicaCount }}
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: {{ include "cm.name" . }}
+            app.kubernetes.io/instance: {{ .Release.Name }}
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: {{ include "cm.name" . }}
+                app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+            initContainers:
+                - name: {{ .Chart.Name }}-wait-for-db
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  command:
+                      - sh
+                      - "-c"
+                      - |
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] waiting for cm-db | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          echo options timeout:1 >> /etc/resolv.conf
+                          until `nc -w 2 -z {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1`; do
+                              sleep 2;
+                          done
+
+                          URL="postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}/${PGDB}"
+                          SQL="SELECT * FROM PG_DATABASE WHERE DATNAME='${PGDB}'"
+                          until psql -P pager=off ${URL} -c "${SQL}"; do
+                              #echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] waiting for cm-db | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                              sleep 5
+                          done
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] cm-db is ready | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                  env:
+                      - name: TZ
+                        value: UTC
+                      - name: PGHOST
+                        value: db
+                      - name: PGDB
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_DB
+                      - name: PGUSER
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_USER
+                      - name: PGPASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_PASSWORD
+            containers:
+                - name: {{ .Chart.Name }}
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  command: ['sh', '-c']
+                  args:
+                      - |
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] {{.Values.global.cmHost}} starting ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          sleep 20;
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] {{.Values.global.cmHost}} ready | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          while true; do
+                              nc -w 0 -l -p {{ .Values.global.cmPort }};
+                              #nc -w 0 -l -p {{ .Values.global.cmPort }} 2>&1 | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                              #echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm] {{.Values.global.cmHost}} restart | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          done
+                  env:
+                      - name: TZ
+                        value: UTC
+                      - name: PGDB
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_DB
+                      - name: PGUSER
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_USER
+                      - name: PGPASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_PASSWORD
+                  ports:
+                      - name: tcp
+                        containerPort: {{ .Values.global.cmPort }}
+                          # supported values: "SCTP", "TCP", "UDP"
+                        protocol: TCP
+                  livenessProbe:
+                      initialDelaySeconds: 5
+                      periodSeconds: 5
+                      exec:
+                          command:
+                              - sh
+                              - "-c"
+                              - exit 0
+                  readinessProbe:
+                      initialDelaySeconds: 21
+                      periodSeconds: 5
+                      tcpSocket:
+                          port: {{ .Values.global.cmPort }}
+                  resources:
+                      {{- toYaml .Values.resources | nindent 22 }}
+            {{- with .Values.nodeSelector }}
+            nodeSelector:
+                {{- toYaml . | nindent 8 }}
+            {{- end }}
+        {{- with .Values.affinity }}
+        affinity:
+            {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.tolerations }}
+        tolerations:
+            {{- toYaml . | nindent 8 }}
+        {{- end }}

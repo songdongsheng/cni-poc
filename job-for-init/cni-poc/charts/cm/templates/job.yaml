@@ -1,0 +1,77 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+    name: {{ include "cm.fullname" . }}-db-init
+    labels:
+        app.kubernetes.io/name: {{ include "cm.name" . }}
+        helm.sh/chart: {{ include "cm.chart" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: {{ include "cm.name" . }}
+                app.kubernetes.io/instance: {{ .Release.Name }}
+        spec:
+            restartPolicy: OnFailure
+            initContainers:
+                - name: {{ .Chart.Name }}-init-wait-for-db
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  command:
+                      - sh
+                      - "-c"
+                      - |
+                          until `nc -w 2 -z {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1`; do
+                              #echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] waiting for db | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                              sleep 2;
+                          done
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] `nc -w 2 -z -v {{ .Values.global.dbHost }} {{ .Values.global.dbPort }} 2>&1` | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] db is up | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+            containers:
+                - name: {{ .Chart.Name }}-init
+                  image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+                  imagePullPolicy: {{ .Values.image.pullPolicy }}
+                  command: ['sh', '-c']
+                  args:
+                      - |
+                          which psql || exit 1
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] {{.Values.global.cmHost}} job begin ... | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          sleep 10;
+                          psql -h db -c "CREATE ROLE ${CM_USER} LOGIN PASSWORD '${CM_PASSWORD}' SUPERUSER INHERIT CREATEDB CREATEROLE REPLICATION" | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          psql -h db -c "CREATE DATABASE ${CM_DB} WITH OWNER = ${CM_USER} ENCODING = 'UTF-8';" | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                          echo `/bin/date "+%Y-%m-%dT%H:%M:%S%z "` [cm-db-init] {{.Values.global.cmHost}} job finished | nc {{ .Values.global.ncHost }} {{ .Values.global.ncPort }};
+                  env:
+                      - name: TZ
+                        value: UTC
+                      - name: PGDB
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: POSTGRES_DB
+                      - name: PGUSER
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: POSTGRES_USER
+                      - name: PGPASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: POSTGRES_PASSWORD
+                      - name: CM_DB
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_DB
+                      - name: CM_USER
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_USER
+                      - name: CM_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: db-secret
+                                key: CM_PASSWORD
