@@ -16,6 +16,9 @@ We have 3 methods to do the cloud native initialization task：
     **When we assign the correct priority to the hook, the hook executes serially,
      and the wait time will not be as long as necessary.**
 
+    **If you let helm wait for the Pods in a ready state, deadlocks can occur.**
+    This is because helm is waiting before the post-hooks execution.
+
 3. Initialize with Kubernetes job and initialization containers
 
     **Without careful tuning of task priorities, it will complete the initialization
@@ -57,8 +60,10 @@ Moreover, nef need oneshot initialization on cm, it takes 10 seconds。
 1. Separate Helm charts works good.
 2. Umbrella Helm charts works.
 3. Umbrella Helm charts with improper hooks weight can deadlock, not works.
+4. If you let helm wait for the Pods in a ready state, deadlocks can occur.
 
 ### Initialize with Kubernetes jobs and initialization containers
 1. Separate Helm charts works good.
 2. Umbrella Helm charts works good.
-3. Kubernetes jobs can do better, it can run initialization tasks concurrently, reducing initialization time.
+3. Kubernetes jobs can do better, it run initialization tasks concurrently, reducing initialization time.
+4. Since no helm to clean up, it looks a bit messy, and add some confusion to the upgrade process.
